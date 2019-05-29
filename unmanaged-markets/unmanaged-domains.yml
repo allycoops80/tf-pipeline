@@ -1,0 +1,47 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Standard DNS zone"
+Parameters:
+  Region:
+    Type: String
+  BaseDomainName:
+    Type: String
+    Description: DNS name WITHOUT trailing dot
+  RedirectPoolIP:
+    Type: String
+    Description: IP Address of RedirectPool
+Resources:
+  PublicHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Sub "${BaseDomainName}."
+      HostedZoneConfig:
+        Comment: !Sub "${BaseDomainName}. DNS HostedZone"
+      HostedZoneTags:
+      - Key: Project
+        Value: infx
+      - Key: DO_NOT_DELETE
+        Value: DO_NOT_DELETE
+  BareRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref 'PublicHostedZone'
+      Name: !Join ['', [!Sub "${BaseDomainName}."]]
+      Type: A
+      TTL: '3600'
+      ResourceRecords: [ !Ref RedirectPoolIP ]
+  WildcardRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref 'PublicHostedZone'
+      Name: !Join ['', ["*.", !Sub "${BaseDomainName}."]]
+      Type: A
+      TTL: '3600'
+      ResourceRecords: [ !Ref RedirectPoolIP ]
+Outputs:
+  HostedZoneId:
+    Value: !Ref PublicHostedZone
+  HostedZoneName:
+    Value: !Sub "${BaseDomainName}."
+  HostedZoneNameServers:
+    Value: !Join [",", !GetAtt PublicHostedZone.NameServers]
