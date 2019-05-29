@@ -1,0 +1,11 @@
+.project
+.settings
+.classpath
+.tmp
+target
+**/target
+
+.idea/
+*.iml
+/pom.xml.versionsBackup
+/.drone.sec.yml
